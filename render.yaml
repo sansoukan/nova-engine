@@ -1,0 +1,18 @@
+
+services:
+  - type: cron
+    name: nova-video-generator
+    env: python
+    startCommand: python generate_batch_fr.py
+    schedule: "@manual"
+    envVars:
+      - key: SUPABASE_URL
+        fromDotEnv: true
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        fromDotEnv: true
+      - key: HEYGEN_API_KEY
+        fromDotEnv: true
+      - key: HEYGEN_TALKING_PHOTO_ID
+        fromDotEnv: true
+      - key: HEYGEN_VOICE_FR
+        fromDotEnv: true
