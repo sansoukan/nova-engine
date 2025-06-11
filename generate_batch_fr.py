@@ -6,7 +6,7 @@ import json
 from dotenv import load_dotenv
 
 load_dotenv()
-print("🔁 Script Nova — TEST : 1 question avec bon filtre + traduction + vidéo")
+print("🔁 Script Nova — TEST propre : 1 question filtrée + traduction + vidéo")
 
 SUPABASE_PROJECT_ID = os.getenv("SUPABASE_URL").split("//")[1].split(".")[0]
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
@@ -74,14 +74,16 @@ def translate(text, target_lang):
         print(f"❌ Erreur OpenAI : {r.status_code} - {r.text}")
         return None
 
-def fetch_one_question():
-    url = f"{SUPABASE_TABLE_URL}?select=*&limit=1&question_fr=not.is.null&video_question_fr=is.null&status_video_fr=not.eq.ok"
-    r = requests.get(url, headers=headers_db)
+def fetch_filtered_question():
+    r = requests.get(f"{SUPABASE_TABLE_URL}?select=*&limit=20", headers=headers_db)
     rows = r.json() if r.status_code == 200 else []
-    return rows[0] if rows else None
+    for row in rows:
+        if row.get("question_fr") and not row.get("video_question_fr") and row.get("status_video_fr") != "ok":
+            return row
+    return None
 
 def main():
-    row = fetch_one_question()
+    row = fetch_filtered_question()
     if not row:
         print("❌ Aucune question valide trouvée.")
         return
