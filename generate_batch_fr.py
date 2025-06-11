@@ -6,7 +6,7 @@ import json
 from dotenv import load_dotenv
 
 load_dotenv()
-print("🔁 Script Nova — test 1 ligne avec wait_for_video() corrigé")
+print("🔁 Script Nova — récupération vidéo via /v1/video/{video_id} ✔")
 
 SUPABASE_PROJECT_ID = os.getenv("SUPABASE_URL").split("//")[1].split(".")[0]
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
@@ -24,13 +24,16 @@ headers_db = {
 
 def wait_for_video(video_id):
     headers = {"Authorization": f"Bearer {HEYGEN_API_KEY}"}
-    print(f"⏳ Suivi de la vidéo {video_id}...")
+    print(f"⏳ Vérification via /v1/video/{video_id}")
     for attempt in range(30):
-        r = requests.get(f"https://api.heygen.com/v1/video_status?video_id={video_id}", headers=headers)
+        r = requests.get(f"https://api.heygen.com/v1/video/{video_id}", headers=headers)
         if r.status_code == 200:
             data = r.json().get("data", {})
-            print(f"⏳ Tentative {attempt+1}: statut = {data.get('status')}")
-            if data.get("status") == "done" and data.get("video_url"):
-                return data.get("video_url")
+            video_url = data.get("video_url")
+            print(f"⏳ Tentative {attempt+1}: {'✅' if video_url else '⏳ Pas encore dispo'}")
+            if video_url:
+                return video_url
         time.sleep(5)
     return None
+
+# Le reste du script reste inchangé — à compléter avec le bloc de traitement standard.
