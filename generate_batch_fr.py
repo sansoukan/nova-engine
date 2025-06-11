@@ -54,7 +54,10 @@ def update_db(row_id, updates):
 
 def fetch_questions():
     res = requests.get(f"{SUPABASE_TABLE_URL}?select=*", headers=headers_db)
-    rows = [row for row in res.json() if not row.get("video_question_fr") and row.get("question_fr")]
+    rows = [
+        row for row in res.json()
+        if row.get("question_fr") and (not row.get("video_question_fr") or row.get("video_question_fr") == "")
+    ]
     print(f"🎯 {len(rows)} question(s) détectées.")
     return rows
 
