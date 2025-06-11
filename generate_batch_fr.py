@@ -6,7 +6,7 @@ import json
 from dotenv import load_dotenv
 
 load_dotenv()
-print("🔁 Script Nova — TEST : 1 seule question + traduction + vidéo")
+print("🔁 Script Nova — TEST : 1 question avec bon filtre + traduction + vidéo")
 
 SUPABASE_PROJECT_ID = os.getenv("SUPABASE_URL").split("//")[1].split(".")[0]
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
@@ -75,14 +75,15 @@ def translate(text, target_lang):
         return None
 
 def fetch_one_question():
-    r = requests.get(f"{SUPABASE_TABLE_URL}?select=*&limit=1", headers=headers_db)
+    url = f"{SUPABASE_TABLE_URL}?select=*&limit=1&question_fr=not.is.null&video_question_fr=is.null&status_video_fr=not.eq.ok"
+    r = requests.get(url, headers=headers_db)
     rows = r.json() if r.status_code == 200 else []
     return rows[0] if rows else None
 
 def main():
     row = fetch_one_question()
     if not row:
-        print("❌ Aucune question trouvée.")
+        print("❌ Aucune question valide trouvée.")
         return
 
     qid = row["id"]
@@ -91,14 +92,12 @@ def main():
     try:
         update_db(qid, {"status_video_fr": "pending"})
 
-        # Traduction
         en = translate(text, "anglais")
         es = translate(text, "espagnol")
         print(f"🌍 EN : {en}")
         print(f"🌍 ES : {es}")
         update_db(qid, {"question_en": en, "question_es": es})
 
-        # Génération vidéo
         payload = {
             "video_inputs": [
                 {
